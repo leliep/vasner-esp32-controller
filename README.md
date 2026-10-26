@@ -97,6 +97,12 @@ Die ursprüngliche Flipper-Zero-Aufnahme liegt unter `docs/Vasner.ir` bei.
 
 Für L1 bis L4 sendet die Software immer ON, dreimal DOWN und anschließend null- bis dreimal UP. Sie verlässt sich deshalb nicht auf einen intern gemerkten Zustand. Voraussetzung ist, dass ON ein eigener, wiederholbar sendbarer Einschaltbefehl und kein Umschalter ist.
 
-Für den Abschalttimer sendet die Software zunächst achtmal RIGHT, um die Auswahl auf 8 h zu sättigen. Anschließend reduziert sie mit LEFT auf 1–7 h; achtmal LEFT ab 8 h wählt den Dauerbetrieb. Das Gerät bleibt bei wiederholtem RIGHT auf 8 h stehen. Zwischen den Timerbefehlen liegen 150 ms, sodass auch die längste Folge aus 16 Signalen mit Reserve innerhalb des ungefähr fünfsekündigen Auswahlfensters übertragen wird.
+Für den Abschalttimer sendet die Software zunächst achtmal RIGHT, um die Auswahl auf 8 h zu sättigen. Anschließend reduziert sie mit LEFT auf 1–7 h; achtmal LEFT ab 8 h wählt den Dauerbetrieb. Das Gerät bleibt bei wiederholtem RIGHT auf 8 h stehen. Die zusätzliche Pause zwischen aufeinanderfolgenden IR-Telegrammen beträgt 100 ms. Wenn der Heizer damit einzelne Befehle überspringt, sollten `COMMAND_GAP_MS` und `TIMER_GAP_MS` schrittweise erhöht werden.
+
+## Takt-Automatik
+
+Die Weboberfläche bietet Gesamtlaufzeiten von 1, 2, 4, 6, 8, 10, 12, 16 und 24 Stunden. Innerhalb eines festen Zehn-Minuten-Zyklus ist der Heizer je nach Auswahl für 10, 20, 50 oder 80 Prozent der Zeit eingeschaltet. Das entspricht 1, 2, 5 oder 8 Minuten Heizzeit je Zyklus. Die Heizstufe L1 bis L4 wird beim Start und nach jeder Pause erneut normalisiert.
+
+Der ESP32 verwaltet die Laufzeit unabhängig vom Browser und zeigt dort die verbleibende Zeit sowie den Zustand „Heizung ein“ oder „Pause“ an. **Stoppen** sendet OFF. Ebenso sendet die Automatik bei Ablauf der Gesamtzeit OFF. Ein manueller ON-, OFF-, MAX-, Stufen- oder Timerbefehl beendet die Automatik; bei einem Neustart des ESP32 wird sie aus Sicherheitsgründen nicht fortgesetzt.
 
 IR besitzt keine Rückmeldung. Ein erfolgreicher HTTP-Aufruf beweist nur, dass der ESP32 gesendet hat, nicht dass der Heizer den Befehl empfangen hat. Das System daher nicht unbeaufsichtigt, nicht als sicherheitsrelevante Abschaltung und nicht über das öffentliche Internet betreiben. Am 230-V-Teil des Heizers sind keine Änderungen erforderlich oder vorgesehen.
