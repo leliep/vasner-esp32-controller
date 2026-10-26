@@ -1,4 +1,5 @@
 #include <Arduino.h>
+#include <ArduinoOTA.h>
 #include <WiFi.h>
 #include <WebServer.h>
 #include <IRremoteESP8266.h>
@@ -7,6 +8,7 @@
 #include "secrets.h"
 
 const char* USERNAME = "admin";
+const char* OTA_HOSTNAME = "terrassenheizer";
 
 // IR-Sender ueber Transistorstufe; blaue Board-LED als Sendeanzeige.
 // Beide Ausgaenge sind beim konkret getesteten Board active HIGH.
@@ -86,10 +88,27 @@ void setup() {
   digitalWrite(STATUS_LED_PIN, LOW);  // blaue LED im Ruhezustand aus
   irsend.begin();
   WiFi.mode(WIFI_STA);
-  WiFi.setHostname("terrassenheizer");
+  WiFi.setHostname(OTA_HOSTNAME);
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
   while (WiFi.status() != WL_CONNECTED) delay(250);
   Serial.print("Weboberflaeche: http://"); Serial.println(WiFi.localIP());
+
+  ArduinoOTA.setHostname(OTA_HOSTNAME);
+  ArduinoOTA.setPassword(OTA_PASSWORD);
+  ArduinoOTA.onStart([](){
+    digitalWrite(STATUS_LED_PIN, HIGH);
+    Serial.println("OTA-Update gestartet");
+  });
+  ArduinoOTA.onEnd([](){
+    digitalWrite(STATUS_LED_PIN, LOW);
+    Serial.println("\nOTA-Update abgeschlossen");
+  });
+  ArduinoOTA.onError([](ota_error_t error){
+    digitalWrite(STATUS_LED_PIN, LOW);
+    Serial.printf("OTA-Fehler %u\n", error);
+  });
+  ArduinoOTA.begin();
+  Serial.print("OTA bereit: "); Serial.print(OTA_HOSTNAME); Serial.println(".local");
 
   server.on("/", HTTP_GET, [](){ if (authenticate()) server.send_P(200, "text/html; charset=utf-8", PAGE); });
   server.on("/api/on", HTTP_POST, [](){ if (!authenticate()) return; sendCommand(IR_CMD_ON); replyOk("on"); });
@@ -112,4 +131,7 @@ void setup() {
   server.begin();
 }
 
-void loop() { server.handleClient(); }
+void loop() {
+  ArduinoOTA.handle();
+  server.handleClient();
+}

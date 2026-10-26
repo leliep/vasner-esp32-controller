@@ -1,6 +1,7 @@
 // Direkte Includes sind wichtig, damit PlatformIOs Library Dependency Finder
 // auch die im ESP32-Arduino-Framework enthaltenen Bibliotheken erkennt.
 #include <Arduino.h>
+#include <ArduinoOTA.h>
 #include <WiFi.h>
 #include <WebServer.h>
 #include <IRremoteESP8266.h>

@@ -6,7 +6,7 @@
 2. In der Erweiterungsansicht nach `PlatformIO IDE` suchen und die offizielle Erweiterung installieren. PlatformIO Core muss nicht zusätzlich installiert werden.
 3. In VS Code `Datei > Ordner öffnen` wählen und diesen Ordner `vasner_esp32` öffnen. Nicht nur eine einzelne Quelldatei öffnen.
 4. Warten, bis PlatformIO die ESP32-Werkzeuge und die Bibliothek `IRremoteESP8266` installiert hat. Die Abhängigkeiten stehen in `platformio.ini`.
-5. `secrets.example.h` als `secrets.h` kopieren und darin `WIFI_SSID`, `WIFI_PASSWORD` und `WEB_PASSWORD` ändern. Ein eigenes, ausreichend langes Web-Passwort verwenden. `secrets.h` wird nicht in Git aufgenommen.
+5. `secrets.example.h` als `secrets.h` kopieren und darin `WIFI_SSID`, `WIFI_PASSWORD`, `WEB_PASSWORD` und `OTA_PASSWORD` ändern. Eigene, ausreichend lange Passwörter verwenden. `secrets.h` wird nicht in Git aufgenommen.
 6. Den ESP32 mit einem USB-Datenkabel anschließen. Reine Ladekabel funktionieren nicht zum Programmieren.
 7. In der unteren PlatformIO-Leiste auf das Häkchen **Build** klicken. Der erste Durchlauf dauert wegen der Werkzeug-Downloads länger.
 8. Danach auf den Pfeil **Upload** klicken. PlatformIO erkennt den seriellen Anschluss normalerweise automatisch.
@@ -16,6 +16,21 @@
 Das Projekt ist für das WEMOS D1 MINI ESP32 mit der PlatformIO-Board-ID `wemos_d1_mini32` vorbereitet.
 
 Falls der Upload bei `Connecting...` stehen bleibt, die BOOT-Taste am ESP32 gedrückt halten, den Upload erneut starten und die Taste loslassen, sobald der Schreibvorgang beginnt. Falls kein Anschluss erscheint, zunächst ein anderes USB-Datenkabel beziehungsweise einen anderen USB-Port probieren; bei Boards mit CP210x- oder CH340-USB-Wandler kann außerdem der passende Betriebssystemtreiber erforderlich sein.
+
+## Updates über WLAN (OTA)
+
+Der erste Upload der OTA-fähigen Firmware muss per USB erfolgen. Danach ist der ESP32 im lokalen WLAN unter `terrassenheizer.local` für Arduino-OTA erreichbar. OTA ist mit dem in `secrets.h` gesetzten `OTA_PASSWORD` geschützt.
+
+Für einen WLAN-Upload im PlatformIO-Terminal:
+
+```bash
+export VASNER_OTA_PASSWORD='DAS_GLEICHE_PASSWORT_WIE_IN_SECRETS_H'
+pio run -e wemos_d1_mini32_ota -t upload
+```
+
+Die Umgebungsvariable gilt nur für das aktuelle Terminal und wird nicht in Git gespeichert. Alternativ kann bei Problemen mit mDNS in `platformio.ini` bei `upload_port` vorübergehend die im seriellen Monitor angezeigte IP-Adresse eingetragen werden.
+
+Während eines OTA-Updates muss der ESP32 eingeschaltet und mit demselben lokalen Netzwerk verbunden bleiben. Ein Stromausfall oder Verbindungsabbruch kann einen erneuten USB-Upload erforderlich machen. Die Steuerungs-Webseite sollte während des Updates nicht benutzt werden.
 
 ## Stückliste
 
@@ -72,7 +87,7 @@ Die ursprüngliche Flipper-Zero-Aufnahme liegt unter `docs/Vasner.ir` bei.
 
 ## Inbetriebnahme
 
-1. `secrets.example.h` als `secrets.h` kopieren und dort WLAN-Name, WLAN-Passwort und Web-Passwort eintragen.
+1. `secrets.example.h` als `secrets.h` kopieren und dort WLAN-Name, WLAN-Passwort, Web-Passwort und OTA-Passwort eintragen.
 2. Sketch kompilieren und hochladen.
 3. IP-Adresse im seriellen Monitor ablesen; im Browser `http://<IP-Adresse>` öffnen.
 4. Sender zunächst mit einer Handykamera prüfen (viele Frontkameras zeigen IR als violettes Flackern).
